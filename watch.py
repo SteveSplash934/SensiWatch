@@ -5,16 +5,25 @@ import numpy as np
 import random as rdm
 from datetime import datetime
 import string as stg
+import argparse
+
 
 def new_video_filename():
-    VID_FILENAME = 'VIDEO_'
+    '''
+    Generate a video filename based using 'VIDEO_' and time called and random ascii character.
+    '''
+    NEW_VIDEO_FILENAME = 'VIDEO_'
     EXT = '.mp4'
     current_datetime = datetime.now()
     formatted_date = current_datetime.strftime('%Y%m%d%H%M%S')
     rand_str = ''.join(rdm.choices(stg.ascii_letters, k=12))
-    return f"{VID_FILENAME}{formatted_date}_{rand_str}{EXT}"
+    return f"{NEW_VIDEO_FILENAME}{formatted_date}_{rand_str}{EXT}"
 
-VIDEO_FILENAME = new_video_filename()
+VIDEO_FILENAME = new_video_filename() # generate a video file name
+print(VIDEO_FILENAME)
+# exit()
+
+HOST = '127.0.0.1'
 PORT = 9090
 
 # Initialize video writer with 4K resolution
@@ -38,7 +47,7 @@ def generate_screen_frames():
 def stream_screen():
     return Response(generate_screen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/dv')
+@app.route('/download_video')
 def download_video():
     try:
         output_video.release()  # Release the video writer before download
@@ -47,4 +56,4 @@ def download_video():
         print(e)
         
 if __name__ == "__main__":
-    app.run(host='192.168.43.235', port=PORT, debug=True)
+    app.run(host=HOST, port=PORT, debug=True)
