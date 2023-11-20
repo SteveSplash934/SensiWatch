@@ -13,7 +13,7 @@ CONTACTS: {
 }
 '''
 
-from flask import Flask, Response, send_file
+from flask import Flask, Response, send_file, render_template
 from PIL import ImageGrab
 import cv2
 import numpy as np
@@ -46,7 +46,131 @@ def new_video_filename():
 
 HOST = args.interface or '127.0.0.1'
 PORT = args.port or 9090
-
+HTML_S_URL = f'http://{HOST}:{PORT}'
+HTML_TITLE = f'{HTML_S_URL} DISPLAY'
+HTML_VIEW = f"""
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>{HTML_TITLE}</title>
+    <style>
+        html{{
+            font-size: 100%;
+        }}
+        *{{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body{{
+            max-width: 100vw;
+            width: 100vw;
+            min-width: 100vw;
+            max-height: 100vh;
+            height: 100vh;
+            min-height: 100vh;
+            background-color: #030303;
+            color: white;
+        }}
+        #sensi-label{{
+            width: 100%;
+            height: fit-content;
+            padding: 10px;
+            background-color: green;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(0.2rem + 36px);
+            font-weight: bold;
+            flex-direction: row;
+            font-family: verdana;
+        }}
+        .footer{{
+            width: 100%;
+            height: fit-content;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            padding: 10px;
+            background-color: green;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(0.065rem + 20px);
+            font-weight: bold;
+            font-family: verdana;
+        }}
+        #render-viewer{{
+            margin-top: 30px;
+            margin-bottom: 30px;
+            width: 100%;
+        }}
+        #render-frame>iframe{{
+            width: 100%;
+            background-color: #fff;
+        }}
+        .control-panel{{
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        .control-panel ul{{
+            list-style: none;
+        }}
+        .control-panel ul li{{
+            display: inline;
+            padding: 10px;
+        }}
+        .control-panel ul li a{{
+            background-color: green;
+            font: 16px verdana;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            padding: 3px;
+            color: #030303;
+            font-weight: bold;
+        }}
+        .control-panel ul li a:hover{{
+            background-color: lightblue;
+        }}
+    </style>
+</head>
+<body>
+    <div class='sensi-label' id='sensi-label'>
+        SensiWatch
+    </div>
+     <div class='control-panel'>
+        <ul>
+            <li><a href='{HTML_S_URL}/disconnect'>DISCONNECT</a></li>
+            <li><a href='{HTML_S_URL}/download_video'>SAVE VIDEO</a></li>
+            <li><a href='{HTML_S_URL}/about'>ABOUT</a></li>
+            <li><a href='{HTML_S_URL}/help'>HELP</a></li>
+        </ul>
+    </div>
+        <iframe src='{HTML_S_URL}/get_screen_view' frameborder='5' id='view_renderr' style='width: 100%; height:85vh;'></iframe>
+        <iframe frameborder='5' id='hidden_view_renderr' style='width: 100%; height:85vh; display:none;'></iframe>
+    <div class='footer'>
+        &copy; - SensiWatch @ ShepherdDomain
+    </div>
+    <script>
+    setInterval(function(){{
+      mainFrame = document.getElementById('view_renderr');
+      hiddenFrame = document.getElementById('hidden_view_renderr');
+      hiddenFrame.src = mainFrame.src;
+      hiddenFrame.onload = function(){{
+       mainFrame.src = hiddenFrame.src;
+      }}
+        }}, 1000);
+    </script>
+</body>
+</html>
+"""
 if args.ngrok:
     AUTHTOKEN = args.ngrok
     
@@ -73,7 +197,19 @@ def generate_screen_frames():
         yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/')
-def stream_screen():
+def index():
+    """
+    Parse the index.html file and let the iframe inside call the get screen view
+    """
+    # generate index.html
+    with open('templates/render.html', 'w') as html_render_file:
+        html_render_file.write(HTML_VIEW)
+        
+    # render index.html view
+    return render_template('render.html')
+    
+@app.route('/get_screen_view')
+def return_iframe():
     '''
     Stream screen record.
     '''

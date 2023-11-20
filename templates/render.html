@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>http://192.168.43.235:9050 DISPLAY</title>
+    <style>
+        html{
+            font-size: 100%;
+        }
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body{
+            max-width: 100vw;
+            width: 100vw;
+            min-width: 100vw;
+            max-height: 100vh;
+            height: 100vh;
+            min-height: 100vh;
+            background-color: #030303;
+            color: white;
+        }
+        #sensi-label{
+            width: 100%;
+            height: fit-content;
+            padding: 10px;
+            background-color: green;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(0.2rem + 36px);
+            font-weight: bold;
+            flex-direction: row;
+            font-family: verdana;
+        }
+        .footer{
+            width: 100%;
+            height: fit-content;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            padding: 10px;
+            background-color: green;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(0.065rem + 20px);
+            font-weight: bold;
+            font-family: verdana;
+        }
+        #render-viewer{
+            margin-top: 30px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        #render-frame>iframe{
+            width: 100%;
+            background-color: #fff;
+        }
+        .control-panel{
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-panel ul{
+            list-style: none;
+        }
+        .control-panel ul li{
+            display: inline;
+            padding: 10px;
+        }
+        .control-panel ul li a{
+            background-color: green;
+            font: 16px verdana;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            padding: 3px;
+            color: #030303;
+            font-weight: bold;
+        }
+        .control-panel ul li a:hover{
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+    <div class='sensi-label' id='sensi-label'>
+        SensiWatch
+    </div>
+     <div class='control-panel'>
+        <ul>
+            <li><a href='http://192.168.43.235:9050/disconnect'>DISCONNECT</a></li>
+            <li><a href='http://192.168.43.235:9050/download_video'>SAVE VIDEO</a></li>
+            <li><a href='http://192.168.43.235:9050/about'>ABOUT</a></li>
+            <li><a href='http://192.168.43.235:9050/help'>HELP</a></li>
+        </ul>
+    </div>
+        <iframe src='http://192.168.43.235:9050/get_screen_view' frameborder='5' id='view_renderr' style='width: 100%; height:85vh;'></iframe>
+        <iframe frameborder='5' id='hidden_view_renderr' style='width: 100%; height:85vh; display:none;'></iframe>
+    <div class='footer'>
+        &copy; - SensiWatch @ ShepherdDomain
+    </div>
+    <script>
+    setInterval(function(){
+      mainFrame = document.getElementById('view_renderr');
+      hiddenFrame = document.getElementById('hidden_view_renderr');
+      hiddenFrame.src = mainFrame.src;
+      hiddenFrame.onload = function(){
+       mainFrame.src = hiddenFrame.src;
+      }
+        }, 1);
+    </script>
+</body>
+</html>
