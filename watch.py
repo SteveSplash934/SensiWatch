@@ -22,6 +22,7 @@ from datetime import datetime
 import string as stg
 import argparse
 import ngrok
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--interface', default='127.0.0.1', help='Host/Interface on which the service will be hosted on.')
@@ -227,10 +228,13 @@ def download_video():
         print(e)
         
 if __name__ == "__main__":
-    if args.ngrok:
-        try:
-            listener = ngrok.connect(PORT, authtoken=AUTHTOKEN)
-            print (f"Loopback URL established at: {listener.url()}")
-        except Exception as e:
-            print(e)
-    app.run(host=HOST, port=PORT)
+    try:
+        if args.ngrok:
+            try:
+                listener = ngrok.connect(PORT, authtoken=AUTHTOKEN)
+                print (f"Loopback URL established at: {listener.url()}")
+            except Exception as e:
+                print(e)
+        app.run(host=HOST, port=PORT)
+    except KeyboardInterrupt:
+        os.remove('templates/render.html')
