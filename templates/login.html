@@ -1,18 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-</head>
-<body>
-    <h2>Login</h2>
-    <form method="POST">
-        <label for="username">Username:</label>
-        <input type="text" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Login</button>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #1e1e2f;
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      form {
+        background-color: #2d2d3a;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        width: 350px;
+        text-align: center;
+      }
+
+      h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #ffffff;
+      }
+
+      .error-message {
+        color: #f87171;
+        background-color: #451515;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        display: none; /* Hidden by default */
+      }
+
+      label {
+        font-size: 14px;
+        display: block;
+        margin-bottom: 8px;
+        color: #ffffff;
+        text-align: left;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #3b3b4d;
+        color: #ffffff;
+        font-size: 14px;
+      }
+
+      input[type="text"]::placeholder,
+      input[type="password"]::placeholder {
+        color: #bbbbbb;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #3b82f6;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #2563eb;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="loginForm" method="POST">
+      <h2>Login</h2>
+      <div class="error-message" id="errorMessage">
+        Invalid credentials! Please try again.
+      </div>
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        name="username"
+        id="username"
+        placeholder="Enter your username"
+        required
+      />
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        placeholder="Enter your password"
+        required
+      />
+      <button type="submit">Login</button>
     </form>
-</body>
+
+    <!-- <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault(); // Prevent the form from submitting normally
+
+          const errorMessageDiv = document.getElementById("errorMessage");
+          errorMessageDiv.style.display = "none"; // Hide error message initially
+
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          try {
+            const response = await fetch("/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            });
+
+            if (response.ok) {
+              // Login successful, redirect or show success message
+              alert("Login successful!");
+              window.location.href = "/dashboard"; // Change to your desired route
+            } else {
+              // Login failed, show error message
+              const result = await response.json();
+              errorMessageDiv.textContent =
+                result.message || "Invalid credentials!";
+              errorMessageDiv.style.display = "block";
+            }
+          } catch (error) {
+            console.error("Error during login:", error);
+            errorMessageDiv.textContent =
+              "An error occurred. Please try again.";
+            errorMessageDiv.style.display = "block";
+          }
+        });
+    </script> -->
+    <script>
+      document
+        .querySelector("#loginForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault(); // Prevent the default form submission
+
+          const username = document.querySelector("#username").value;
+          const password = document.querySelector("#password").value;
+          const errorMessageDiv = document.getElementById("errorMessage");
+          errorMessageDiv.style.display = "none"; // Hide error message initially
+
+          try {
+            const response = await fetch("/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              errorMessageDiv.textContent = result.message;
+              errorMessageDiv.style.display = "block";
+              window.location.href = "/"; // Redirect to the protected page
+            } else {
+              errorMessageDiv.textContent =
+                result.message || "Invalid credentials!";
+              errorMessageDiv.style.display = "block";
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+          }
+        });
+    </script>
+  </body>
 </html>

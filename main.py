@@ -118,19 +118,41 @@ def download_video():
         return f"Error: {e}", 500
 
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     """
+#     Handle user login.
+#     """
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+#         if username == AUTHORIZED_USERS['user'] and password == AUTHORIZED_USERS['password']:
+#             session['user'] = username  # Store the username in session
+#             return redirect(url_for('index'))  # Redirect to the protected page
+#         else:
+#             return "Invalid credentials", 401
+#     return render_template('login.html')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
     Handle user login.
     """
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        if request.content_type == 'application/json':
+            data = request.json
+            username = data.get('username')
+            password = data.get('password')
+        else:
+            username = request.form.get('username')
+            password = request.form.get('password')
+
         if username == AUTHORIZED_USERS['user'] and password == AUTHORIZED_USERS['password']:
             session['user'] = username  # Store the username in session
-            return redirect(url_for('index'))  # Redirect to the protected page
+            return {"message": "Login successful"}, 200
         else:
-            return "Invalid credentials", 401
+            return {"message": "Invalid credentials"}, 401
     return render_template('login.html')
 
 
