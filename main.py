@@ -237,7 +237,7 @@ atexit.register(cleanup)
 if __name__ == "__main__":
     try:
         if NGROK_TOKEN:
-            print("Fetching remote loopback URL...")
+            print(f"Fetching remote loopback URL on url: http://{HOST}:{PORT}...")
             listener = ngrok.connect(PORT, authtoken=NGROK_TOKEN)
             lurl = listener.url()
             print (f"Loopback URL established at: {lurl}")

@@ -6,3 +6,4 @@ tests
 flask_session/
 *copy*
 old.py
+.env
