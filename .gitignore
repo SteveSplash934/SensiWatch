@@ -5,3 +5,4 @@ push.bat
 tests
 flask_session/
 *copy*
+old.py
