@@ -78,6 +78,7 @@ Follow these steps to set up and run SensiWatch:
    - Open a web browser and navigate to:  
      `http://<HOST>:<PORT>`  
      (e.g., `http://127.0.0.1:9091`)
+     or use the link provided by the NGROK tunnel
 
 ---
 
