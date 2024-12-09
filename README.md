@@ -111,5 +111,4 @@ This tool is for authorized use only. Unauthorized use of this tool to monitor s
 
 ### Future Updates
 
-- **ngrok Support**: Working on restoring tunneling functionality.
 - **Downloading**: Enhancing download reliability for recorded videos.
