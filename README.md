@@ -16,8 +16,11 @@ SensiWatch is a lightweight screen monitoring tool designed for educational purp
 
 ### Known Issues
 
-- **ngrok**: Remote access via `ngrok` is currently not functional. A fix is in progress.
 - **Downloading Recordings**: The download functionality is under maintenance and will be updated soon.
+
+### Fixed
+
+- NGROK fixed
 
 Stay tuned for updates in upcoming releases!
 

