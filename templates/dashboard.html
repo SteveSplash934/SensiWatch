@@ -27,6 +27,16 @@
         object-position: center;
         z-index: -1;
       }
+      .brand,
+      .controls {
+        transition: opacity 0.5s ease;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
       .brand {
         position: absolute;
         top: 10px;
@@ -79,16 +89,6 @@
           font-size: 14px;
           padding: 8px 12px;
         }
-        .screen-feed {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 400px;
-          height: 250px;
-          object-fit: cover;
-          object-position: center;
-          z-index: -1;
-        }
       }
       @media (max-width: 480px) {
         .brand {
@@ -115,8 +115,34 @@
       <button onclick="logout()">Logout</button>
     </div>
     <script>
+      let hideTimeout;
+
+      const brand = document.querySelector(".brand");
+      const controls = document.querySelector(".controls");
+
+      const hideElements = () => {
+        brand.classList.add("hidden");
+        controls.classList.add("hidden");
+      };
+
+      const showElements = () => {
+        brand.classList.remove("hidden");
+        controls.classList.remove("hidden");
+
+        // Restart the timer to hide elements
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(hideElements, 3000); // 3 seconds of inactivity
+      };
+
+      // Show elements initiallys
+      showElements();
+
+      // Listen for mouse movements and keyboard input
+      document.addEventListener("mousemove", showElements);
+      document.addEventListener("keydown", showElements);
+
       function downloadVideo() {
-        window.location.href = "/download_video";
+        window.location.href = "/download_video"; // becareful, not working yet!
       }
       function logout() {
         window.location.href = "/logout";
