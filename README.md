@@ -71,7 +71,7 @@ Follow these steps to set up and run SensiWatch:
 5. **Run the Application**
 
    ```bash
-   python app.py
+   python main.py
    ```
 
 6. **Access the Tool**
