@@ -3,3 +3,5 @@ VIDEO_*
 dev/
 push.bat
 tests
+flask_session
+*copy*

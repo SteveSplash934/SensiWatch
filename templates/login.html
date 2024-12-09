@@ -90,10 +90,8 @@
   </head>
   <body>
     <form id="loginForm" method="POST">
-      <h2>Login</h2>
-      <div class="error-message" id="errorMessage">
-        Invalid credentials! Please try again.
-      </div>
+      <h2>SensiWatch | Login</h2>
+      <div class="error-message" id="errorMessage"></div>
       <label for="username">Username:</label>
       <input
         type="text"
@@ -112,47 +110,6 @@
       />
       <button type="submit">Login</button>
     </form>
-
-    <!-- <script>
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", async (event) => {
-          event.preventDefault(); // Prevent the form from submitting normally
-
-          const errorMessageDiv = document.getElementById("errorMessage");
-          errorMessageDiv.style.display = "none"; // Hide error message initially
-
-          const username = document.getElementById("username").value;
-          const password = document.getElementById("password").value;
-
-          try {
-            const response = await fetch("/login", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ username, password }),
-            });
-
-            if (response.ok) {
-              // Login successful, redirect or show success message
-              alert("Login successful!");
-              window.location.href = "/dashboard"; // Change to your desired route
-            } else {
-              // Login failed, show error message
-              const result = await response.json();
-              errorMessageDiv.textContent =
-                result.message || "Invalid credentials!";
-              errorMessageDiv.style.display = "block";
-            }
-          } catch (error) {
-            console.error("Error during login:", error);
-            errorMessageDiv.textContent =
-              "An error occurred. Please try again.";
-            errorMessageDiv.style.display = "block";
-          }
-        });
-    </script> -->
     <script>
       document
         .querySelector("#loginForm")
@@ -180,6 +137,7 @@
               errorMessageDiv.style.display = "block";
               window.location.href = "/"; // Redirect to the protected page
             } else {
+              errorMessageDiv.style.backgroundColor = "lightgreen";
               errorMessageDiv.textContent =
                 result.message || "Invalid credentials!";
               errorMessageDiv.style.display = "block";

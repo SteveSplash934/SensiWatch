@@ -118,22 +118,6 @@ def download_video():
         return f"Error: {e}", 500
 
 
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     """
-#     Handle user login.
-#     """
-#     if request.method == 'POST':
-#         username = request.form['username']
-#         password = request.form['password']
-#         if username == AUTHORIZED_USERS['user'] and password == AUTHORIZED_USERS['password']:
-#             session['user'] = username  # Store the username in session
-#             return redirect(url_for('index'))  # Redirect to the protected page
-#         else:
-#             return "Invalid credentials", 401
-#     return render_template('login.html')
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -149,7 +133,7 @@ def login():
             password = request.form.get('password')
 
         if username == AUTHORIZED_USERS['user'] and password == AUTHORIZED_USERS['password']:
-            session['user'] = username  # Store the username in session
+            session['user'] = username
             return {"message": "Login successful"}, 200
         else:
             return {"message": "Invalid credentials"}, 401
@@ -161,8 +145,8 @@ def logout():
     """
     Logout and clear the session.
     """
-    session.pop('user', None)  # Remove the user from session
-    return redirect(url_for('login'))  # Redirect to login page
+    session.pop('user', None)
+    return redirect(url_for('login'))
 
 
 def cleanup():

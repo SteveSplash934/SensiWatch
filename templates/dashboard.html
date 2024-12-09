@@ -5,85 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SensiWatch View</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
+      * {
         margin: 0;
         padding: 0;
-        background-color: #1e1e2f;
-        color: #ffffff;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
         height: 100vh;
-        flex-direction: column;
-      }
-      .container {
-        display: flex;
-        gap: 20px;
-        width: 90%;
-        max-width: 1200px;
-        background-color: #2d2d3a;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
-      }
-      .screen,
-      .controls {
-        flex: 1;
+        background-color: #000;
+        color: #fff;
+        overflow: hidden;
       }
       .screen-feed {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-        height: auto;
-        border-radius: 10px;
-        border: 2px solid #555;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: -1;
       }
-      button{
+      .brand {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 24px;
+        font-weight: bold;
+        background-color: rgba(0, 0, 0, 0.5);
         padding: 10px 20px;
-        margin-top: 10px;
+        border-radius: 8px;
+        max-width: 90%;
+      }
+      .controls {
+        position: absolute;
+        bottom: 20px;
+        left: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 15px;
+        border-radius: 8px;
+        max-width: 90%;
+        width: auto;
+      }
+      button {
+        padding: 10px 15px;
         background-color: #3b82f6;
         border: none;
         border-radius: 5px;
         color: white;
         font-size: 16px;
         cursor: pointer;
-        display: block;
+        transition: background-color 0.3s ease;
       }
       button:hover {
         background-color: #2563eb;
       }
-      .brand {
-        font-size: 34px;
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .brand {
+          font-size: 20px;
+          padding: 8px 15px;
+        }
+        .controls {
+          bottom: 10px;
+          left: 10px;
+          padding: 10px;
+        }
+        button {
+          font-size: 14px;
+          padding: 8px 12px;
+        }
+        .screen-feed {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 400px;
+          height: 250px;
+          object-fit: cover;
+          object-position: center;
+          z-index: -1;
+        }
+      }
+      @media (max-width: 480px) {
+        .brand {
+          font-size: 16px;
+          padding: 6px 10px;
+        }
+        .controls {
+          gap: 8px;
+          padding: 8px;
+        }
+        button {
+          font-size: 12px;
+          padding: 6px 10px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="brand">
-      <h2>SensiWatch Screen Monitor</h2>
-    </div>
-    <div class="container">
-      <div class="controls">
-        <h2>Controls</h2>
-        <button onclick="downloadVideo()">Download Recording</button>
-        <button onclick="logout()">Logout</button>
-      </body>
-        <p>More features coming soon!</p>
-      </div>
-      <div class="screen">
-        <h2>Live Screen View</h2>
-        <img
-          src="/get_screen_view"
-          alt="Live Screen Feed"
-          class="screen-feed"
-        />
-      </div>
+    <img src="/get_screen_view" alt="Live Screen Feed" class="screen-feed" />
+    <div class="brand">SensiWatch Screen Monitor</div>
+    <div class="controls">
+      <button onclick="downloadVideo()">Download Recording</button>
+      <button onclick="refreshFeed()">Refresh Feed</button>
+      <button onclick="logout()">Logout</button>
     </div>
     <script>
       function downloadVideo() {
         window.location.href = "/download_video";
       }
-      function logout(){
+      function logout() {
         window.location.href = "/logout";
-
+      }
+      function refreshFeed() {
+        window.location.reload();
       }
     </script>
   </body>
