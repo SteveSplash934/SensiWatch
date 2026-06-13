@@ -55,11 +55,13 @@ def patch_uvicorn_protocols() -> None:
     except ImportError:
         pass
 
-    # Safely try to load alternative Wsprotocols
+    # Safely try to load alternative Wsprotocols (resolved dynamically to keep type checker happy)
     try:
-        from uvicorn.protocols.websockets.wsproto_impl import WSProtoProtocol
-        protocols_to_patch.append(WSProtoProtocol)
-    except ImportError:
+        import importlib
+        wsproto_mod = importlib.import_module("uvicorn.protocols.websockets.wsproto_impl")
+        wsproto_class = getattr(wsproto_mod, "WSProtoProtocol")
+        protocols_to_patch.append(wsproto_class)
+    except (ImportError, AttributeError):
         pass
 
     for protocol_class in protocols_to_patch:
@@ -78,12 +80,15 @@ patch_uvicorn_protocols()
 
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, status, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.app.core.database import init_db, get_db
 from server.app.api.v1 import enroll
 from server.app.services.signaling import signaling_manager
+from server.app.api.v1 import auth
+from server.app.api.v1.auth import get_current_user_session, templates
 
 
 @asynccontextmanager
@@ -101,6 +106,23 @@ app = FastAPI(
 )
 
 app.include_router(enroll.router, prefix="/api/v1", tags=["Enrollment"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
+
+
+@app.get("/", response_class=RedirectResponse)
+async def root_redirect() -> RedirectResponse:
+    """Redirect unauthenticated visitors to the login entrance."""
+    return RedirectResponse(url="/api/v1/auth/login")
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def get_dashboard(request: Request) -> Response:
+    """Renders the paginated active grid view for authenticated administrators."""
+    username = get_current_user_session(request)
+    if not username:
+        return RedirectResponse(url="/api/v1/auth/login", status_code=status.HTTP_303_SEE_OTHER)
+        
+    return templates.TemplateResponse(request, "dashboard.html", {"username": username})
 
 
 @app.websocket("/ws/signaling")
@@ -115,9 +137,24 @@ async def websocket_signaling_endpoint(
 
     try:
         while True:
-            # Keep socket open and listen for pings/signals
-            data = await websocket.receive_text()
-            # On receipt of any client data packet, log heartbeat timestamp
-            await signaling_manager.update_heartbeat(db, common_name)
+            # Read ASGI event dictionaries directly to support both bytes and text on one port
+            data = await websocket.receive()
+            
+            # Explicitly catch ASGI disconnect events to trigger clean exit and db updates
+            if data.get("type") == "websocket.disconnect":
+                raise WebSocketDisconnect(code=data.get("code", 1000))
+            
+            if "bytes" in data:
+                # Raw binary frame from client capture engine
+                await signaling_manager.broadcast_thumbnail(common_name, data["bytes"])
+            elif "text" in data:
+                # Command / WebRTC signal
+                # Update client heartbeat timestamp
+                await signaling_manager.update_heartbeat(db, common_name)
+                
     except WebSocketDisconnect:
-        await signaling_manager.disconnect(common_name, db)
+        if common_name == "ADMIN":
+            if websocket in signaling_manager.admin_listeners:
+                signaling_manager.admin_listeners.remove(websocket)
+        else:
+            await signaling_manager.disconnect(common_name, db)

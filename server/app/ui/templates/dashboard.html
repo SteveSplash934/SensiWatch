@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SensiWatch Enterprise{% endblock %}
+
+{% block content %}
+<!-- Navigation Header -->
+<header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+        <i data-lucide="monitor" class="text-rose-500 w-6 h-6"></i>
+        <h1 class="text-lg font-bold tracking-tight">SensiWatch Console</h1>
+    </div>
+    <div class="flex items-center gap-4">
+        <span class="text-sm text-slate-400 flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Session: <strong class="text-slate-200">{{ username }}</strong>
+        </span>
+        <a href="/api/v1/auth/logout"
+            class="text-sm font-semibold text-rose-500 hover:text-rose-400 flex items-center gap-1">
+            <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+        </a>
+    </div>
+</header>
+
+<!-- Adaptive Video Matrix Container -->
+<main class="flex-1 p-6 overflow-y-auto">
+    <!-- Static 4x2 Grid mapping to the active paginated viewports constraint -->
+    <div id="grid-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- 8 Grid Elements represent the 4x2 Matrix -->
+        {% for idx in range(8) %}
+        <div
+            class="group relative rounded-lg border border-slate-800 bg-slate-900 overflow-hidden flex flex-col justify-between aspect-video shadow-lg">
+            <!-- Thumbnail frame slot -->
+            <div class="flex-1 flex items-center justify-center bg-slate-950 relative">
+                <img id="thumb-node-{{ idx }}" class="absolute inset-0 w-full h-full object-cover hidden"
+                    alt="Monitor Slot {{ idx }}">
+                <!-- Idle slot placeholder -->
+                <div id="placeholder-node-{{ idx }}" class="text-slate-600 flex flex-col items-center gap-2 text-xs">
+                    <i data-lucide="video-off" class="w-8 h-8"></i>
+                    <span>Monitor Slot Unbound</span>
+                </div>
+            </div>
+            <!-- Bottom identity label -->
+            <div class="bg-slate-900 border-t border-slate-800 px-3 py-2 flex items-center justify-between">
+                <span id="label-node-{{ idx }}"
+                    class="text-xs font-semibold text-slate-400 truncate">UNBOUND-SLOT</span>
+                <span id="status-node-{{ idx }}" class="h-2 w-2 rounded-full bg-slate-700"></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Map tracking active client CNs to grid slots (0-7)
+    const activeSlots = {};
+    const maxSlots = 8;
+
+    function getAvailableSlot(commonName) {
+        // If client already holds a slot, return it
+        if (activeSlots[commonName] !== undefined) {
+            return activeSlots[commonName];
+        }
+        // Otherwise, allocate the first unbound slot
+        for (let i = 0; i < maxSlots; i++) {
+            const taken = Object.values(activeSlots).includes(i);
+            if (!taken) {
+                activeSlots[commonName] = i;
+                return i;
+            }
+        }
+        return -1; // Overflow
+    }
+
+    // Connect standard websocket to the unified signaling route (bypass mTLS via standard cookies)
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws/signaling`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+        Toastify({
+            text: "Connected to signaling pipeline.",
+            duration: 3000,
+            gravity: "bottom",
+            position: "right",
+            style: { background: "linear-gradient(to right, #10b981, #059669)" }
+        }).showToast();
+    };
+
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+
+            if (data.event === "thumbnail") {
+                const cn = data.common_name;
+                const slotIdx = getAvailableSlot(cn);
+
+                if (slotIdx === -1) return; // Ignore if dashboard layout is fully saturated
+
+                // Swap placeholder with actual streaming frame
+                const img = document.getElementById(`thumb-node-${slotIdx}`);
+                const placeholder = document.getElementById(`placeholder-node-${slotIdx}`);
+                const label = document.getElementById(`label-node-${slotIdx}`);
+                const statusDot = document.getElementById(`status-node-${slotIdx}`);
+
+                img.src = `data:image/jpeg;base64,${data.image}`;
+                img.classList.remove("hidden");
+                placeholder.classList.add("hidden");
+
+                label.innerText = cn;
+                statusDot.className = "h-2 w-2 rounded-full bg-emerald-500 animate-pulse";
+            }
+        } catch (e) {
+            console.error("Failed to parse websocket frame:", e);
+        }
+    };
+
+    socket.onclose = () => {
+        Toastify({
+            text: "Signaling disconnected. Retrying...",
+            duration: 5000,
+            gravity: "bottom",
+            position: "right",
+            style: { background: "linear-gradient(to right, #f43f5e, #e11d48)" }
+        }).showToast();
+    };
+</script>
+{% endblock %}

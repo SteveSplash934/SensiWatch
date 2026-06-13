@@ -6,6 +6,7 @@ import platform
 import signal
 import sys
 import time
+from typing import Any
 
 from client.src.core.storage import get_cert_dir
 from client.src.network.bootstrap import run_bootstrap
@@ -52,6 +53,22 @@ class SensiWatchDaemon:
         self._running = False
         self.state = DaemonState.STOPPED
 
+    async def stream_thumbnails(self, websocket: Any) -> None:
+        """Captures and sends binary screenshots over the WS every 3 seconds while connected."""
+        from client.src.capture.grabber import ScreenGrabber
+        grabber = ScreenGrabber()
+
+        logger.info("Starting background thumbnail stream loop...")
+        while self.state == DaemonState.CONNECTED:
+            try:
+                # Capture frame at 320px width, 50% JPEG quality
+                frame_bytes = grabber.grab_thumbnail(width=320, quality=50)
+                await websocket.send(frame_bytes)  # Standard library automatically sends as binary [4]
+            except Exception as e:
+                logger.error(f"Thumbnail capture loop failed: {e}")
+                break
+            await asyncio.sleep(3.0)
+
     async def _transition_and_execute(self) -> None:
         """Structural pattern matching router for FSM execution."""
         match self.state:
@@ -64,8 +81,6 @@ class SensiWatchDaemon:
             case DaemonState.CONNECTING:
                 await self._handle_connecting()
             case DaemonState.CONNECTED:
-                # The CONNECTED logic is blocking inside the websockets loop.
-                # If we ever land back here, we yield execution.
                 await asyncio.sleep(1) 
             case DaemonState.STOPPED:
                 self._running = False
@@ -117,7 +132,7 @@ class SensiWatchDaemon:
         try:
             self.state = DaemonState.CONNECTED
             # Blocks here while the websocket connection is actively alive
-            await self.ws_client.connect_and_listen()
+            await self.ws_client.connect_and_listen(self)
             logger.warning("mTLS socket connection closed cleanly.")
         except Exception as e:
             logger.error(f"mTLS Connection attempt failed: {e}")

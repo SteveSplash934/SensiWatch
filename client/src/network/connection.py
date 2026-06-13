@@ -1,6 +1,7 @@
+import asyncio
 import ssl
 import logging
-from typing import Optional
+from typing import Optional, Any
 from websockets.asyncio.client import connect, ClientConnection
 
 from client.src.core.storage import get_cert_dir
@@ -41,10 +42,10 @@ class MTLSWebSocketClient:
 
         return ssl_context
 
-    async def connect_and_listen(self) -> None:
+    async def connect_and_listen(self, daemon: Any) -> None:
         """
         Establishes and maintains the persistent WebSocket connection.
-        Handles handshake and listens for incoming signaling packets.
+        Spawns the thumbnail streaming task concurrently while connected.
         """
         ssl_context = self._build_ssl_context()
         logger.info(f"Attempting mTLS WebSocket handshake to {self.server_ws_url}...")
@@ -60,10 +61,17 @@ class MTLSWebSocketClient:
                 self.websocket = websocket
                 logger.info("Persistent mTLS WebSocket connection established.")
 
-                # Keep connection alive and process incoming packets
-                async for message in websocket:
-                    logger.debug(f"Received signaling packet: {message}")
-                    # WebRTC / Thumbnail instruction handling will hook here in Milestone 3
+                # Spawn the client's screen capturing loop concurrently
+                thumbnail_task = asyncio.create_task(daemon.stream_thumbnails(websocket))
+
+                try:
+                    # Keep connection alive and process incoming packets
+                    async for message in websocket:
+                        logger.debug(f"Received signaling packet: {message}")
+                        # WebRTC packets will be routed here in Step 3.3
+                finally:
+                    # Automatically cancel streaming task if connection drops
+                    thumbnail_task.cancel()
 
         except Exception as e:
             logger.error(f"WebSocket connection encountered an error: {e}")

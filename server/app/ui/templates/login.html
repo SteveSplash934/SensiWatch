@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Login - SensiWatch Enterprise{% endblock %}
+
+{% block content %}
+<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8 bg-slate-950">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <div class="flex justify-center text-rose-500">
+            <i data-lucide="shield-alert" class="w-12 h-12"></i>
+        </div>
+        <h2 class="mt-6 text-center text-2xl font-bold tracking-tight text-slate-100">
+            SensiWatch Enterprise
+        </h2>
+        <p class="mt-1 text-center text-sm text-slate-400">
+            Secure Unattended Monitor Console
+        </p>
+    </div>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <!-- Render Error Banner if present -->
+        {% if error %}
+        <div
+            class="mb-4 rounded-md bg-rose-500/10 p-4 border border-rose-500/30 text-rose-400 text-sm flex items-center gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form class="space-y-6" action="/api/v1/auth/login" method="POST">
+            <div>
+                <label for="username" class="block text-sm font-medium text-slate-300">Username</label>
+                <div class="mt-2">
+                    <input type="text" name="username" id="username" required autocomplete="username"
+                        class="block w-full rounded-md border-0 bg-slate-900 py-1.5 px-3 text-slate-100 shadow-sm ring-1 ring-inset ring-slate-800 focus:ring-2 focus:ring-inset focus:ring-rose-500 sm:text-sm">
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between">
+                    <label for="password" class="block text-sm font-medium text-slate-300">Password</label>
+                </div>
+                <div class="mt-2">
+                    <input type="password" name="password" id="password" required autocomplete="current-password"
+                        class="block w-full rounded-md border-0 bg-slate-900 py-1.5 px-3 text-slate-100 shadow-sm ring-1 ring-inset ring-slate-800 focus:ring-2 focus:ring-inset focus:ring-rose-500 sm:text-sm">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    class="flex w-full justify-center rounded-md bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 cursor-pointer">
+                    Sign In
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
