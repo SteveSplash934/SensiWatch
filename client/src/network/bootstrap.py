@@ -55,9 +55,9 @@ async def run_bootstrap(token: str, server_url: str) -> bool:
 
         csr_pem = csr.public_bytes(serialization.Encoding.PEM).decode("utf-8")
 
-        # 3. Post CSR to server bootstrap endpoint
+        # 3. Post CSR to server bootstrap endpoint (verify=False for local self-signed HTTPS testing)
         logger.info(f"Submitting CSR and Token to {server_url}/api/v1/enroll...")
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:
             response = await client.post(
                 f"{server_url}/api/v1/enroll",
                 json={"token": token, "csr": csr_pem},
