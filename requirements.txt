@@ -1,7 +1,0 @@
-Flask
-Pillow
-opencv-python
-numpy
-ngrok
-psutil
-python-dotenv

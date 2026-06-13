@@ -1,115 +1,68 @@
 # SensiWatch
 
-**Remote Screen Monitoring Tool**
+**SensiWatch** is a high-performance, hardened remote monitoring platform engineered for unattended server farms, industrial kiosks, and controlled examination environments. It provides secure, real-time visual oversight of multiple target nodes via a Zero-Trust architecture.
 
-SensiWatch is a lightweight screen monitoring tool designed for educational purposes, remote assistance, or internal use within a secure network. It allows users to view and record screen activities remotely in real time.
 
----
+## Architectural Vision
 
-### Features
+SensiWatch replaces traditional, insecure remote monitoring protocols with cryptographic identity verification and adaptive media streaming.
 
-- **Real-Time Streaming**: Stream desktop activity securely over a local network.
-- **Recording Option**: Save the screen activity as a 4K video file for later review.
-- **Telegram Notifications**: Option to receive updates via Telegram for specific events.
+* **Zero-Trust Security:** mTLS-only communication backbone. Every client agent is cryptographically verified by an embedded Certificate Authority (CA).
+* **Intelligent Streaming:** A dual-tier pipeline that optimizes for network health.
+* *Thumbnail Mode:* Adaptive, low-framerate keyframes for grid-view monitoring.
+* *Focus Mode:* Hardware-accelerated, low-latency WebRTC streaming upon administrator demand.
 
----
 
-### Known Issues
+* **Modern Stack:** Built on Python 3.13+ for high-throughput concurrency, FastAPI for secure signaling, and Tailwind v4 for a clean administrative interface.
+* **Infrastructure Resilience:** Split-tunnel telemetry ensures that diagnostic logs reach the development team even during catastrophic local network partitions.
 
-- **Downloading Recordings**: The download functionality is under maintenance and will be updated soon.
+## Tech Stack
 
-### Fixed
+* **Core:** Python 3.13+, FastAPI, uv (Workspaces)
+* **Database:** SQLite (Embedded)
+* **Security:** mTLS (Mutual TLS), Embedded CA, OS-level ACL hardening
+* **Frontend:** Tailwind v4, Lucide Icons, JS Toastify
+* **Streaming:** WebRTC (aiortc) & WebSocket Signaling
 
-- NGROK fixed
+## MVP Roadmap
 
-Stay tuned for updates in upcoming releases!
+The system is developed through a strictly gated milestone process:
 
----
+1. **Foundation:** mTLS Handshake & Embedded CA Enrollment.
+2. **Infrastructure:** Headless Daemon Lifecycle & Presence Telemetry.
+3. **Visibility:** Thumbnail Pipeline & Adaptive Grid UI.
+4. **Reliability:** Fault-Tolerant Out-of-Band Telemetry.
+5. **Deployment:** Silent Binary Packaging & Containerized Hosting.
+
+## Getting Started
+
+### Prerequisites
+
+* Python 3.13+
+* uv package manager
 
 ### Installation
 
-Follow these steps to set up and run SensiWatch:
-
-1. **Clone the Repository**
-
-   ```bash
-   git clone https://github.com/stevesplash934/SensiWatch.git
-   cd SensiWatch
-   ```
-
-2. **Set Up a Virtual Environment (Optional)**
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install Dependencies**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure Environment Variables**  
-   Copy the `.sample.env` file to `.env` and fill in the necessary details:
-
-   ```bash
-   cp .sample.env .env
-   ```
-
-   Update the `.env` file:
-
-   - `HOST`: IP address of the host server (default: `127.0.0.1`).
-   - `PORT`: Port for the server to run on (default: `9091`).
-   - `USER`: Username for authentication (default: `admin`).
-   - `PASS`: Password for authentication (default: `password`).
-   - `VIDEO_OUTPUT_DIR`: Directory to save recorded videos (default: `vids`).
-   - `NGROK_TOKEN`: Your ngrok authentication token (leave blank if not using ngrok).
-   - `TELEGRAM_CHATID`: Your Telegram chat ID (optional for Telegram notifications).
-   - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token (optional for Telegram notifications).
-
-5. **Run the Application**
-
-   ```bash
-   python main.py
-   ```
-
-6. **Access the Tool**
-   - Open a web browser and navigate to:  
-     `http://<HOST>:<PORT>`  
-     (e.g., `http://127.0.0.1:9091`)
-     or use the link provided by the NGROK tunnel
-
----
-
-### .env Sample File
-
-```env
-HOST=127.0.0.1
-PORT=9091
-USER=admin
-PASS=password
-VIDEO_OUTPUT_DIR="vids"
-NGROK_TOKEN=
-TELEGRAM_CHATID=
-TELEGRAM_BOT_TOKEN=
+1. **Clone the Repository:**
+```bash
+git clone https://github.com/SteveSplash934/SensiWatch.git
+cd SensiWatch
 ```
 
----
+2. **Sync Workspace:**
+```bash
+uv venv --system-site-packages
+uv sync
+```
 
-### Legal Disclaimer
+### Deployment
 
-This tool is for authorized use only. Unauthorized use of this tool to monitor someone else’s activity without their consent is illegal and against the ethics of cybersecurity. Always respect privacy and comply with local laws.
+Detailed deployment instructions for containerized server hosting and silent headless client installation are provided in the `/deploy` directory.
 
----
+## Security Policy
 
-### Developer
+SensiWatch utilizes mTLS and OS-level access control lists to ensure that private keys remain inaccessible to local system users. Refer to the project documentation for cryptographic implementation details.
 
-- **Name**: Steve Splash
-- **Contact**: [GitHub](https://github.com/stevesplash934/) | [Email](mailto:stevesplash4@gmail.com)
+## License
 
----
-
-### Future Updates
-
-- **Downloading**: Enhancing download reliability for recorded videos.
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).

@@ -1,0 +1,14 @@
+[project]
+name = "sensiwatch"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+[workspace]
+members = ["server", "client", "shared"]
+
+[tool.uv.workspace]
+members = [
+    "server",
+    "client",
+    "shared",
+]

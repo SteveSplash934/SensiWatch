@@ -1,10 +1,59 @@
-todo.txt
-VIDEO_*
-dev/
-push.bat
-tests
-flask_session
-*copy*
-old.py
+@docs
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments (uv default)
+.venv/
+venv/
+env/
+
+# uv / packaging artifacts
+uv.lock
+.uv/
+.python-version
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (if you use Tailwind build tooling)
+node_modules/
+
+# Docker
+*.pid
+
+# SQLite (optional, if you don't want DB tracked)
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
 .env
-.env.dd
+.env.*
+!.env.example
+.treeignore
+c.py
+*.pdf
