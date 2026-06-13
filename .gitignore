@@ -57,3 +57,6 @@ node_modules/
 .treeignore
 c.py
 *.pdf
+
+*.pem
+ca_storage
